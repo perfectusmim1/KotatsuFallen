@@ -78,24 +78,11 @@ interface WebViewRequestInterceptor {
 /**
  * Configuration for WebView request interception
  */
+// kotlin
 data class InterceptionConfig(
-    /**
-     * Maximum time to wait for requests (milliseconds)
-     */
-    val timeoutMs: Long = 30000L,
-
-    /**
-     * Maximum number of requests to capture
-     */
+    val timeoutMs: Long,
     val maxRequests: Int = 100,
-
-    /**
-     * URL pattern to filter requests (optional)
-     */
     val urlPattern: Regex? = null,
-
-    /**
-     * JavaScript code to filter requests on the client side (optional)
-     */
-    val filterScript: String? = null,
+    val filterScript: String? = null,   // JS containing predicate (last return)
+    val pageScript: String? = null      // JS to actually run in the page
 )

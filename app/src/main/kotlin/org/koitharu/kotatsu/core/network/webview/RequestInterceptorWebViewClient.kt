@@ -1,5 +1,6 @@
 package org.koitharu.kotatsu.core.network.webview
 
+import android.util.Log
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
@@ -45,16 +46,16 @@ class RequestInterceptorWebViewClient(
         return parentResponse
     }
 
-    override fun onPageFinished(webView: WebView, url: String) {
-        super.onPageFinished(webView, url)
-
-        // Give additional time for AJAX requests after page load
-        webView.postDelayed({
-            if (isCapturing.compareAndSet(true, false)) {
-                completeInterception()
-            }
-        }, 2000) // Wait 2 seconds after page load for AJAX requests
+    // kotlin
+    override fun onPageFinished(view: WebView, url: String) {
+        super.onPageFinished(view, url)
+        val script = config.pageScript
+        if (!script.isNullOrBlank()) {
+            Log.d(TAG_VRF, "Injecting pageScript...")
+            view.evaluateJavascript(script, null)
+        }
     }
+
 
     private fun captureRequestIfMatches(request: WebResourceRequest) {
         try {
