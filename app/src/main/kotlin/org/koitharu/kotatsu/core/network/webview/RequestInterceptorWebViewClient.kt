@@ -77,8 +77,15 @@ class RequestInterceptorWebViewClient(
             }
 
             if (shouldCapture) {
-                synchronized(capturedRequests) {
+                val shouldComplete = synchronized(capturedRequests) {
                     capturedRequests.add(interceptedRequest)
+                    capturedRequests.size >= config.maxRequests
+                }
+
+                // If we've reached maxRequests, stop capturing immediately
+                if (shouldComplete) {
+                    Log.d(TAG_VRF, "Reached maxRequests (${config.maxRequests}), stopping capture immediately")
+                    stopCapturing()
                 }
             }
 

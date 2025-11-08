@@ -31,6 +31,7 @@ class WebViewRequestInterceptorExecutor @Inject constructor(
 
     private var webViewCached: WeakReference<WebView>? = null
     private val mainHandler = Handler(Looper.getMainLooper())
+    private val activeWebViews = mutableSetOf<WeakReference<WebView>>()
 
     suspend fun interceptRequests(
         url: String,
@@ -98,36 +99,72 @@ class WebViewRequestInterceptorExecutor @Inject constructor(
 
                     resultDeferred.invokeOnCompletion { ex ->
                         mainHandler.removeCallbacks(timeoutRunnable)
-                        // Clean up WebView after operation completes
+                        // Clean up WebView after operation completes - must run on main thread
                         webView?.let { wv ->
                             Log.d(TAG_VRF, "Cleaning up WebView after operation")
-                            wv.stopLoading()
-                            wv.destroy()
-                            webViewCached = null
+                            if (Thread.currentThread() == Looper.getMainLooper().thread) {
+                                // Already on main thread, destroy immediately
+                                wv.stopLoading()
+                                wv.destroy()
+                                removeWebViewFromTracking(wv)
+                                if (ex != null) continuation.resumeWithException(ex)
+                                else continuation.resume(resultDeferred.getCompleted())
+                            } else {
+                                // Must post to main thread, but wait for completion
+                                mainHandler.post {
+                                    wv.stopLoading()
+                                    wv.destroy()
+                                    removeWebViewFromTracking(wv)
+                                    if (ex != null) continuation.resumeWithException(ex)
+                                    else continuation.resume(resultDeferred.getCompleted())
+                                }
+                            }
+                        } ?: run {
+                            // No WebView to clean up, resume immediately
+                            if (ex != null) continuation.resumeWithException(ex)
+                            else continuation.resume(resultDeferred.getCompleted())
                         }
-                        if (ex != null) continuation.resumeWithException(ex)
-                        else continuation.resume(resultDeferred.getCompleted())
                     }
                     continuation.invokeOnCancellation {
                         client.stopCapturing()
                         mainHandler.removeCallbacks(timeoutRunnable)
-                        // Clean up WebView on cancellation
+                        // Clean up WebView on cancellation - must run on main thread
                         webView?.let { wv ->
                             Log.d(TAG_VRF, "Cleaning up WebView on cancellation")
-                            wv.stopLoading()
-                            wv.destroy()
-                            webViewCached = null
+                            if (Thread.currentThread() == Looper.getMainLooper().thread) {
+                                // Already on main thread, destroy immediately
+                                wv.stopLoading()
+                                wv.destroy()
+                                removeWebViewFromTracking(wv)
+                            } else {
+                                // Must post to main thread for cleanup
+                                mainHandler.post {
+                                    wv.stopLoading()
+                                    wv.destroy()
+                                    removeWebViewFromTracking(wv)
+                                }
+                            }
                         }
                         if (!resultDeferred.isCompleted) resultDeferred.cancel()
                     }
                 } catch (e: Exception) {
-                    // Clean up WebView on exception
+                    // Clean up WebView on exception - must run on main thread
                     webView?.let { wv ->
                         Log.d(TAG_VRF, "Cleaning up WebView on exception")
-                        wv.destroy()
-                        webViewCached = null
-                    }
-                    continuation.resumeWithException(e)
+                        if (Thread.currentThread() == Looper.getMainLooper().thread) {
+                            // Already on main thread, destroy immediately
+                            wv.destroy()
+                            removeWebViewFromTracking(wv)
+                            continuation.resumeWithException(e)
+                        } else {
+                            // Must post to main thread, then resume with exception
+                            mainHandler.post {
+                                wv.destroy()
+                                removeWebViewFromTracking(wv)
+                                continuation.resumeWithException(e)
+                            }
+                        }
+                    } ?: continuation.resumeWithException(e)
                 }
             }
         }
@@ -166,12 +203,8 @@ class WebViewRequestInterceptorExecutor @Inject constructor(
 
     @MainThread
     private fun obtainWebView(): WebView {
-        // Always create a fresh WebView for VRF extraction to avoid state issues
-        webViewCached?.get()?.let { oldWebView ->
-            Log.d(TAG_VRF, "Destroying previous WebView instance")
-            oldWebView.destroy()
-            webViewCached = null
-        }
+        // Clean up any previous WebView instances
+        cleanupOldWebViews()
 
         val wv = WebView(context).apply {
             configureForParser(null)
@@ -180,8 +213,46 @@ class WebViewRequestInterceptorExecutor @Inject constructor(
             clearCache(true)
         }
         Log.d(TAG_VRF, "Created fresh WebView instance")
-        webViewCached = WeakReference(wv)
+
+        // Track this WebView
+        val webViewRef = WeakReference(wv)
+        webViewCached = webViewRef
+        synchronized(activeWebViews) {
+            activeWebViews.add(webViewRef)
+        }
+
         return wv
+    }
+
+    @MainThread
+    private fun cleanupOldWebViews() {
+        synchronized(activeWebViews) {
+            val iterator = activeWebViews.iterator()
+            while (iterator.hasNext()) {
+                val ref = iterator.next()
+                val webView = ref.get()
+                if (webView == null) {
+                    // WebView was garbage collected
+                    iterator.remove()
+                } else {
+                    // Destroy still-active WebView
+                    Log.d(TAG_VRF, "Destroying previous WebView instance")
+                    webView.destroy()
+                    iterator.remove()
+                }
+            }
+        }
+        webViewCached = null
+    }
+
+    @MainThread
+    private fun removeWebViewFromTracking(webView: WebView) {
+        synchronized(activeWebViews) {
+            activeWebViews.removeAll { it.get() == webView || it.get() == null }
+        }
+        if (webViewCached?.get() == webView) {
+            webViewCached = null
+        }
     }
 }
 
