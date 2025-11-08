@@ -178,7 +178,7 @@ class WebViewRequestInterceptorExecutor @Inject constructor(
         val config = InterceptionConfig(
             timeoutMs = timeout,
             urlPattern = urlPattern,
-            maxRequests = 50
+            maxRequests = 1              // 🚀 STOP IMMEDIATELY when first VRF found!
         )
         return interceptRequests(pageUrl, config)
             .also { Log.d(TAG_VRF, "captureWebViewUrls matched=${it.size}") }
@@ -193,7 +193,7 @@ class WebViewRequestInterceptorExecutor @Inject constructor(
         val config = InterceptionConfig(
             timeoutMs = timeout,
             urlPattern = vrfPattern,
-            maxRequests = 10
+            maxRequests = 1              // 🚀 STOP IMMEDIATELY when first VRF found!
         )
         val requests = interceptRequests(pageUrl, config)
         val vrf = requests.firstOrNull()?.getQueryParameter("vrf")
