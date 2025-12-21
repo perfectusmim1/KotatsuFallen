@@ -25,5 +25,6 @@ data class MangaTagSyncDto(
 		put("title", title)
 		put("key", key)
 		put("source", source)
+		put("pinned", false)
 	}
 }

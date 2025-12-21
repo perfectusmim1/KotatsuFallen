@@ -52,5 +52,6 @@ data class MangaSyncDto(
 		put("state", state)
 		put("author", author)
 		put("source", source)
+		put("nsfw", false)
 	}
 }
