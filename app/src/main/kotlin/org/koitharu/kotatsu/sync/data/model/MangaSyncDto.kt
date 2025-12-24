@@ -22,7 +22,7 @@ data class MangaSyncDto(
 	@SerialName("state") val state: String?,
 	@SerialName("author") val author: String?,
 	@SerialName("source") val source: String,
-	@SerialName("nsfw") val nsfw: Boolean,
+	@SerialName("nsfw") val nsfw: Boolean = false,
 ) {
 
 	constructor(cursor: Cursor, tags: Set<MangaTagSyncDto>) : this(
