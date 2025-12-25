@@ -51,6 +51,11 @@ class SyncController @Inject constructor(
 		}
 	}
 
+	fun setEnabled(account: Account, syncFavorites: Boolean, syncHistory: Boolean) {
+		ContentResolver.setSyncAutomatically(account, authorityFavourites, syncFavorites)
+		ContentResolver.setSyncAutomatically(account, authorityHistory, syncHistory)
+	}
+
 	fun isEnabled(account: Account): Boolean {
 		return ContentResolver.getMasterSyncAutomatically() && (ContentResolver.getSyncAutomatically(
 			account,
@@ -59,6 +64,20 @@ class SyncController @Inject constructor(
 			account,
 			authorityHistory,
 		))
+	}
+
+	fun isFavouritesEnabled(account: Account): Boolean {
+		return ContentResolver.getMasterSyncAutomatically() && ContentResolver.getSyncAutomatically(
+			account,
+			authorityFavourites,
+		)
+	}
+
+	fun isHistoryEnabled(account: Account): Boolean {
+		return ContentResolver.getMasterSyncAutomatically() && ContentResolver.getSyncAutomatically(
+			account,
+			authorityHistory,
+		)
 	}
 
 	fun getLastSync(account: Account, authority: String): Long {
