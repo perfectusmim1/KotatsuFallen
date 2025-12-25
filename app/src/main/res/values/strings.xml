@@ -908,4 +908,5 @@
     <string name="private_app_directory_warning">This directory with all data will be deleted if you uninstall the application</string>
     <string name="available_pattern">%1$s available</string>
 	<string name="forgot_password">Forgot password</string>
+	<string name="reset_email_sent">If a valid account exists, an email to reset your password has been sent to your inbox</string>
 </resources>

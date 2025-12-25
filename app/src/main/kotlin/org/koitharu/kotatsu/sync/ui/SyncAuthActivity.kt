@@ -216,7 +216,7 @@ class SyncAuthActivity : BaseActivity<ActivitySyncAuthBinding>(), View.OnClickLi
 		MaterialAlertDialogBuilder(this)
 			.setNegativeButton(R.string.close, null)
 			.setTitle(R.string.forgot_password)
-			.setMessage("If a valid account exists, an email to reset your password has been sent to your inbox")
+			.setMessage(getString(R.string.reset_email_sent))
 			.show()
 	}
 
