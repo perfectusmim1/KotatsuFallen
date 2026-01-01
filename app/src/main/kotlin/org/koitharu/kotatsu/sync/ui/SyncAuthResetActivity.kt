@@ -23,7 +23,6 @@ import org.koitharu.kotatsu.core.util.ext.observe
 import org.koitharu.kotatsu.core.util.ext.observeEvent
 import org.koitharu.kotatsu.core.util.ext.systemBarsInsets
 import org.koitharu.kotatsu.databinding.ActivitySyncAuthResetBinding
-import org.koitharu.kotatsu.settings.SettingsActivity
 
 private const val PASSWORD_MIN_LENGTH = 4
 
@@ -47,7 +46,7 @@ class SyncAuthResetActivity : BaseActivity<ActivitySyncAuthResetBinding>(), View
 
 		supportFragmentManager.setFragmentResultListener(SyncHostDialogFragment.REQUEST_KEY, this, this)
 
-		if(intent.action != Intent.ACTION_VIEW || intent.data?.host != SettingsActivity.HOST_RESET_PASSWORD) {
+		if(intent.action != Intent.ACTION_VIEW || intent.data?.host != HOST_RESET_PASSWORD) {
 			onNoTokenProvided()
 			return
 		}
@@ -132,5 +131,9 @@ class SyncAuthResetActivity : BaseActivity<ActivitySyncAuthResetBinding>(), View
 		Toast.makeText(this, "No reset token provided", Toast.LENGTH_SHORT)
 			.show()
 		super.finishAfterTransition()
+	}
+
+	companion object {
+		private const val HOST_RESET_PASSWORD = "reset-password"
 	}
 }

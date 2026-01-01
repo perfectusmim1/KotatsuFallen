@@ -182,9 +182,8 @@ class SettingsActivity :
 	}
 
 	companion object {
-		const val HOST_ABOUT = "about"
-		const val HOST_SYNC_SETTINGS = "sync-settings"
-		const val HOST_RESET_PASSWORD = "reset-password"
+		private const val HOST_ABOUT = "about"
+		private const val HOST_SYNC_SETTINGS = "sync-settings"
 		const val ARG_PREF_KEY = "pref_key"
 	}
 }
