@@ -1,4 +1,4 @@
-Kotatsu-Redo is a fork from Kotatsu focus to maintain the sources and existing features.
+KotatsuFallen is a fork from Kotatsu focus to maintain the sources and existing features.
 
 
 **Main Features:**

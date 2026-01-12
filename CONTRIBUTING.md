@@ -1,8 +1,8 @@
 ## Kotatsu contribution guidelines
 
-+ If you want to **fix bugs** or **implement new features** that **already have an [issue card](https://github.com/Kotatsu-Redo/Kotatsu-Redo/issues):** please assign this issue to you and/or comment about it.
++ If you want to **fix bugs** or **implement new features** that **already have an [issue card](https://github.com/perfectusmim1/KotatsuFallen/issues):** please assign this issue to you and/or comment about it.
 + If you want to **implement a new feature:** open an issue or discussion regarding it to ensure it will be accepted.
-+ In case you want to **add a new manga source,** refer to the [parsers repository](https://github.com/Kotatsu-Redo/kotatsu-parsers-redo).
++ In case you want to **add a new manga source,** refer to the [parsers repository](https://github.com/perfectusmim1/kotatsu-parsers-fallen).
 
 **Refactoring** or some **dev-faces improvements** might also be accepted. However, please stick to the following principles:
 
